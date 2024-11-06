@@ -37,6 +37,12 @@ void MainWindow::on_ConnectButton_clicked()
     ui->DisconnectButton->setEnabled(true);
     EnableConfiguration(true);
 
+    status = Version(&MonLecteur);
+    qDebug() << "Version" << status;
+
+    status = RF_Power_Control(&MonLecteur, TRUE, 0);
+    qDebug() << "Power On" << status;
+
     //status = Version(&MonLecteur);
     //ui->Affichage->setText(MonLecteur.version);
     //ui->Affichage->update();
@@ -58,6 +64,27 @@ void MainWindow::on_ExitButton_clicked()
     status = LEDBuzzer(&MonLecteur, LED_OFF);
     status = CloseCOM(&MonLecteur);
     qApp -> quit();
+}
+
+void MainWindow::on_SelectCardButton_clicked()
+{
+    int16_t status = MI_OK;
+
+    uint8_t atq = 0;
+    uint8_t sak = 0;
+    uint8_t uid = 0;
+    uint16_t uid_len = 0;
+
+    uint32_t Nom = 10;
+
+
+    //Wake up de la carte
+    status = ISO14443_3_A_PollCardWU(&MonLecteur,&atq, &sak, &uid, &uid_len );
+
+
+    status = Mf_Classic_Read_Value(&MonLecteur, TRUE, 10, &Nom, TRUE, 2);
+
+    qDebug() << Nom;
 }
 
 void MainWindow::initPictures()

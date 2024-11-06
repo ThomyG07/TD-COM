@@ -25,6 +25,7 @@ private slots:
     void on_ConnectButton_clicked();
     void on_DisconnectButton_clicked();
     void on_ExitButton_clicked();
+    void on_SelectCardButton_clicked();
 
 };
 #endif // MAINWINDOW_H
