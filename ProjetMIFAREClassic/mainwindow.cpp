@@ -51,13 +51,22 @@ void MainWindow::on_DisconnectButton_clicked()
     EnableConfiguration(false);
 }
 
+void MainWindow::on_ExitButton_clicked()
+{
+    int16_t status = MI_OK;
+    RF_Power_Control(&MonLecteur, FALSE, 0);
+    status = LEDBuzzer(&MonLecteur, LED_OFF);
+    status = CloseCOM(&MonLecteur);
+    qApp -> quit();
+}
+
 void MainWindow::initPictures()
 {
     QLabel* logo1 = ui->Logo_1;
-    logo1->setPixmap(QPixmap("D:/Communication sans fil/ProjetMIFAREClassic/Img/OIG2.png"));
+    logo1->setPixmap(QPixmap("C:/Users/gblan/Documents/GitHub/TD-COM/ProjetMIFAREClassic/Img/OIG2.png"));
 
     QLabel* logo2 = ui->Logo_2;
-    logo2->setPixmap(QPixmap("D:/Communication sans fil/ProjetMIFAREClassic/Img/OIG2.png"));
+    logo2->setPixmap(QPixmap("C:/Users/gblan/Documents/GitHub/TD-COM/ProjetMIFAREClassic/Img/OIG2.png"));
 
 }
 void MainWindow::EnableConfiguration(bool isvisible)
