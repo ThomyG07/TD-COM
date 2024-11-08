@@ -76,15 +76,17 @@ void MainWindow::on_SelectCardButton_clicked()
     uint16_t uid_len = 0;
 
     uint32_t Nom = 10;
-
+    uint32_t Prenom = 10;
 
     //Wake up de la carte
     status = ISO14443_3_A_PollCardWU(&MonLecteur,&atq, &sak, &uid, &uid_len );
 
 
     status = Mf_Classic_Read_Value(&MonLecteur, TRUE, 10, &Nom, TRUE, 2);
+    status = Mf_Classic_Read_Value(&MonLecteur, TRUE, 9, &Prenom, TRUE, 2);
 
-    qDebug() << Nom;
+    qDebug() << "Nom" << Nom;
+    qDebug() << "Prenom" << Prenom;
 }
 
 void MainWindow::initPictures()
