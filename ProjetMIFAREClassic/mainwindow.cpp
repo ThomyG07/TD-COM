@@ -148,10 +148,10 @@ void MainWindow::on_UpdateButton_clicked()
 void MainWindow::initPictures()
 {
     QLabel* logo1 = ui->Logo_1;
-    logo1->setPixmap(QPixmap("C:/Users/gblan/Documents/GitHub/TD-COM/ProjetMIFAREClassic/Img/OIG2.png"));
+    logo1->setPixmap(QPixmap(":/icon/Img/OIG2.png"));
 
     QLabel* logo2 = ui->Logo_2;
-    logo2->setPixmap(QPixmap("C:/Users/gblan/Documents/GitHub/TD-COM/ProjetMIFAREClassic/Img/OIG2.png"));
+    logo2->setPixmap(QPixmap(":/icon/Img/OIG2.png"));
 
 }
 void MainWindow::EnableConfiguration(bool isvisible)
