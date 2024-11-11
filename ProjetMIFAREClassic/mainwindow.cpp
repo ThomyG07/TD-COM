@@ -8,6 +8,7 @@
 #include "Tools.h"
 #include "TypeDefs.h"
 #include <QDebug>
+#include <string>
 
 MainWindow::MainWindow(QWidget *parent)
     : QWidget(parent)
@@ -87,6 +88,36 @@ void MainWindow::on_SelectCardButton_clicked()
 
     qDebug() << "Nom" << Nom;
     qDebug() << "Prenom" << Prenom;
+}
+
+void MainWindow::on_UpdateButton_clicked()
+{
+    int16_t status_Nom = MI_OK;
+    int16_t status_Prenom = MI_OK;
+
+    QString NomSaisi = ui->lineEdit_5->text();
+
+    QByteArray byteArray = NomSaisi.toLocal8Bit();
+    const char* cstr = byteArray.data();
+
+    char Nom[8];
+    strncpy(Nom, cstr, sizeof(Nom) - 1);
+    Nom[7] = '\0';
+
+    QString PrenomSaisi = ui->lineEdit_6->text();
+
+    QByteArray byteArray2 = PrenomSaisi.toLocal8Bit();
+    const char* cstr2 = byteArray2.data();
+
+    char Prenom[8];
+    strncpy(Prenom, cstr2, sizeof(Nom) - 1);
+    Prenom[7] = '\0';
+
+    status_Nom = Mf_Classic_Write_Block(&MonLecteur, TRUE,10, (unsigned char*)Nom,AuthKeyB,2);
+    status_Prenom = Mf_Classic_Write_Block(&MonLecteur, TRUE,9, (unsigned char*)Nom,AuthKeyB,2);
+
+    qDebug() << "status écriture du nom : " << status_Nom;
+    qDebug() << "status écriture du prenom : " << status_Prenom;
 }
 
 void MainWindow::initPictures()
