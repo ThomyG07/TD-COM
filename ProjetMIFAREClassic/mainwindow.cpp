@@ -8,7 +8,8 @@
 #include "Tools.h"
 #include "TypeDefs.h"
 #include <QDebug>
-#include <string>
+#include <QString>
+
 
 MainWindow::MainWindow(QWidget *parent)
     : QWidget(parent)
@@ -76,18 +77,42 @@ void MainWindow::on_SelectCardButton_clicked()
     uint8_t uid = 0;
     uint16_t uid_len = 0;
 
-    uint32_t Nom = 10;
-    uint32_t Prenom = 10;
+    uint8_t Nom = 0;
+    uint8_t Prenom = 0;
+
+    uint8_t Wallet = 0;
+
+
 
     //Wake up de la carte
     status = ISO14443_3_A_PollCardWU(&MonLecteur,&atq, &sak, &uid, &uid_len );
 
 
-    status = Mf_Classic_Read_Value(&MonLecteur, TRUE, 10, &Nom, TRUE, 2);
-    status = Mf_Classic_Read_Value(&MonLecteur, TRUE, 9, &Prenom, TRUE, 2);
+    status = Mf_Classic_Read_Block(&MonLecteur, TRUE, 10, &Nom, TRUE, 2);
+    qDebug() << status;
+
+    status = Mf_Classic_Read_Block(&MonLecteur, TRUE, 9, &Prenom, TRUE, 2);
+    qDebug() << status;
+
+    status = Mf_Classic_Read_Block(&MonLecteur, TRUE, 14, &Wallet, TRUE, 3);
+    qDebug() << status;
+
+    auto NomText = QString::number(Nom);
+    auto PrenomText = QString::number(Prenom);
+    auto WalletText = QString::number(Wallet);
+
+    ui -> lineEdit_5 -> setText(NomText);
+    ui -> lineEdit_5 -> update();
+
+    ui -> lineEdit_6 -> setText(PrenomText);
+    ui -> lineEdit_6 -> update();
+
+    ui -> lineEdit_3 -> setText(WalletText);
+    ui -> lineEdit_3 -> update();
 
     qDebug() << "Nom" << Nom;
     qDebug() << "Prenom" << Prenom;
+    qDebug() << "Wallet" << Wallet;
 }
 
 void MainWindow::on_UpdateButton_clicked()
