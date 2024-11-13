@@ -77,43 +77,47 @@ void MainWindow::on_SelectCardButton_clicked()
     uint8_t uid = 0;
     uint16_t uid_len = 0;
 
+
+
+    //Wake up de la carte
+    status = ISO14443_3_A_PollCard(&MonLecteur,&atq, &sak, &uid, &uid_len );
+
     char Nom[16];
     char Prenom[16];
 
     uint8_t Wallet = 0;
 
 
+    status = GetDataSector(10, Nom);
 
-    //Wake up de la carte
-    status = ISO14443_3_A_PollCardWU(&MonLecteur,&atq, &sak, &uid, &uid_len );
+    ui -> lineEdit_5 -> setText(Nom);
+    ui -> lineEdit_5 -> update();
 
-    status = Mf_Classic_Read_Block(&MonLecteur, TRUE, 10, (unsigned char*)Nom, AuthKeyA, 2);
-    qDebug() << "Lecture Prenom"<< status;
+    status = GetDataSector(9, Prenom);
 
-    status = Mf_Classic_Read_Block(&MonLecteur, TRUE, 9, (unsigned char*)Prenom, AuthKeyA, 2);
-    qDebug() << "Lecture nom"<< status;
+    ui -> lineEdit_6 -> setText(Prenom);
+    ui -> lineEdit_6 -> update();
 
 
 
     status = Mf_Classic_Read_Block(&MonLecteur, TRUE, 14, &Wallet, AuthKeyA, 3);
     qDebug() << status;
 
-    auto NomText = Nom;
-    auto PrenomText = Prenom;
+    qDebug() << "Nom" << Nom;
+    qDebug() << "Prenom" << Prenom;
+    qDebug() << "Wallet" << Wallet;
+
+
     auto WalletText = QString::number(Wallet);
 
-    ui -> lineEdit_5 -> setText(NomText);
-    ui -> lineEdit_5 -> update();
 
-    ui -> lineEdit_6 -> setText(PrenomText);
-    ui -> lineEdit_6 -> update();
+
+
 
     ui -> lineEdit_3 -> setText(WalletText);
     ui -> lineEdit_3 -> update();
 
-    qDebug() << "Nom" << Nom;
-    qDebug() << "Prenom" << Prenom;
-    qDebug() << "Wallet" << Wallet;
+
 }
 
 void MainWindow::on_UpdateButton_clicked()
@@ -165,6 +169,16 @@ void MainWindow::EnableConfiguration(bool isvisible)
 
     QGroupBox * GroupeDecrementation = ui->Decrementation;
     GroupeDecrementation->setEnabled(isvisible);
+}
+
+uint16_t MainWindow::GetDataSector(int sector, char data[16])
+{
+    uint16_t status = MI_OK;
+
+    status = Mf_Classic_Read_Block(&MonLecteur, TRUE, sector, (unsigned char*)data, AuthKeyA, 2);
+    qDebug() << "Lecture Carte"<< status;
+
+    return status;
 
 
 }

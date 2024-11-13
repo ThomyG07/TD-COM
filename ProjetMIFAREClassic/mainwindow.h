@@ -21,6 +21,7 @@ private:
     Ui::MainWindow *ui;
     void initPictures();
     void EnableConfiguration(bool isvisible);
+    uint16_t GetDataSector(int sector, char data[16]);
 private slots:
     void on_ConnectButton_clicked();
     void on_DisconnectButton_clicked();
