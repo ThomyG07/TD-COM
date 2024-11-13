@@ -77,8 +77,8 @@ void MainWindow::on_SelectCardButton_clicked()
     uint8_t uid = 0;
     uint16_t uid_len = 0;
 
-    uint8_t Nom = 0;
-    uint8_t Prenom = 0;
+    char Nom[16];
+    char Prenom[16];
 
     uint8_t Wallet = 0;
 
@@ -87,18 +87,19 @@ void MainWindow::on_SelectCardButton_clicked()
     //Wake up de la carte
     status = ISO14443_3_A_PollCardWU(&MonLecteur,&atq, &sak, &uid, &uid_len );
 
+    status = Mf_Classic_Read_Block(&MonLecteur, TRUE, 10, (unsigned char*)Nom, AuthKeyA, 2);
+    qDebug() << "Lecture Prenom"<< status;
 
-    status = Mf_Classic_Read_Block(&MonLecteur, TRUE, 10, &Nom, TRUE, 2);
+    status = Mf_Classic_Read_Block(&MonLecteur, TRUE, 9, (unsigned char*)Prenom, AuthKeyA, 2);
+    qDebug() << "Lecture nom"<< status;
+
+
+
+    status = Mf_Classic_Read_Block(&MonLecteur, TRUE, 14, &Wallet, AuthKeyA, 3);
     qDebug() << status;
 
-    status = Mf_Classic_Read_Block(&MonLecteur, TRUE, 9, &Prenom, TRUE, 2);
-    qDebug() << status;
-
-    status = Mf_Classic_Read_Block(&MonLecteur, TRUE, 14, &Wallet, TRUE, 3);
-    qDebug() << status;
-
-    auto NomText = QString::number(Nom);
-    auto PrenomText = QString::number(Prenom);
+    auto NomText = Nom;
+    auto PrenomText = Prenom;
     auto WalletText = QString::number(Wallet);
 
     ui -> lineEdit_5 -> setText(NomText);
@@ -135,11 +136,11 @@ void MainWindow::on_UpdateButton_clicked()
     const char* cstr2 = byteArray2.data();
 
     char Prenom[8];
-    strncpy(Prenom, cstr2, sizeof(Nom) - 1);
+    strncpy(Prenom, cstr2, sizeof(Prenom) - 1);
     Prenom[7] = '\0';
 
     status_Nom = Mf_Classic_Write_Block(&MonLecteur, TRUE,10, (unsigned char*)Nom,AuthKeyB,2);
-    status_Prenom = Mf_Classic_Write_Block(&MonLecteur, TRUE,9, (unsigned char*)Nom,AuthKeyB,2);
+    status_Prenom = Mf_Classic_Write_Block(&MonLecteur, TRUE,9, (unsigned char*)Prenom,AuthKeyB,2);
 
     qDebug() << "status écriture du nom : " << status_Nom;
     qDebug() << "status écriture du prenom : " << status_Prenom;
