@@ -167,6 +167,31 @@ void MainWindow::EnableConfiguration(bool isvisible)
     GroupeDecrementation->setEnabled(isvisible);
 }
 
+void MainWindow::on_ChargeButton_clicked()
+{
+    uint16_t statusIncrement = MI_OK;
+    uint16_t statusRestore = MI_OK;
+    uint16_t statusRead = MI_OK;
+    uint8_t Wallet;
+
+    uint8_t ChargeValue = ui->spinBox_2->value();
+
+    uint8_t Charge = ChargeValue;
+
+    statusIncrement = Mf_Classic_Increment_Value(&MonLecteur, TRUE, 13, Charge, 13, AuthKeyB, 3);
+    qDebug() << statusIncrement;
+    statusRestore = Mf_Classic_Restore_Value(&MonLecteur, TRUE,13,14,AuthKeyB,3);
+    qDebug() << statusRestore;
+    statusRead = Mf_Classic_Read_Block(&MonLecteur, TRUE, 14, &Wallet, AuthKeyA, 3);
+    qDebug() << statusRead;
+
+    auto WalletText = QString::number(Wallet);
+
+    ui -> lineEdit_3 -> setText(WalletText);
+    ui -> lineEdit_3 -> update();
+
+}
+
 uint16_t MainWindow::GetDataSector(int sector, char data[16])
 {
     uint16_t status = MI_OK;

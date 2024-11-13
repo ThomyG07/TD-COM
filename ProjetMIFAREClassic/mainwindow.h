@@ -28,6 +28,7 @@ private slots:
     void on_ExitButton_clicked();
     void on_SelectCardButton_clicked();
     void on_UpdateButton_clicked();
+    void on_ChargeButton_clicked();
 
 };
 #endif // MAINWINDOW_H
