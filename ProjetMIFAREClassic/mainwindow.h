@@ -2,6 +2,7 @@
 #define MAINWINDOW_H
 
 #include <QWidget>
+#include <qlineedit.h>
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -22,6 +23,7 @@ private:
     void initPictures();
     void EnableConfiguration(bool isvisible);
     uint16_t GetDataSector(int sector, char data[16]);
+    uint16_t SetDataSector(int sector, QLineEdit* qline);
 private slots:
     void on_ConnectButton_clicked();
     void on_DisconnectButton_clicked();

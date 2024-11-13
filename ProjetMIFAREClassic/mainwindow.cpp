@@ -118,32 +118,30 @@ void MainWindow::on_SelectCardButton_clicked()
 
 void MainWindow::on_UpdateButton_clicked()
 {
-    int16_t status_Nom = MI_OK;
-    int16_t status_Prenom = MI_OK;
 
-    QString NomSaisi = ui->lineEdit_5->text();
+    SetDataSector(10, ui->lineEdit_5);
+    SetDataSector(9, ui->lineEdit_6);
 
-    QByteArray byteArray = NomSaisi.toLocal8Bit();
-    const char* cstr = byteArray.data();
+    LEDBuzzer(&MonLecteur, BUZZER_ON);
+    LEDBuzzer(&MonLecteur, LED_YELLOW_ON);
+    Sleep(10);
+    LEDBuzzer(&MonLecteur, BUZZER_OFF);
+    LEDBuzzer(&MonLecteur, LED_RED_ON);
 
-    char Nom[8];
-    strncpy(Nom, cstr, sizeof(Nom) - 1);
-    Nom[7] = '\0';
+    int16_t status = MI_OK;
 
-    QString PrenomSaisi = ui->lineEdit_6->text();
+    char Nom[16];
+    char Prenom[16];
 
-    QByteArray byteArray2 = PrenomSaisi.toLocal8Bit();
-    const char* cstr2 = byteArray2.data();
+    status = GetDataSector(10, Nom);
 
-    char Prenom[8];
-    strncpy(Prenom, cstr2, sizeof(Prenom) - 1);
-    Prenom[7] = '\0';
+    ui -> lineEdit_5 -> setText(Nom);
+    ui -> lineEdit_5 -> update();
 
-    status_Nom = Mf_Classic_Write_Block(&MonLecteur, TRUE,10, (unsigned char*)Nom,AuthKeyB,2);
-    status_Prenom = Mf_Classic_Write_Block(&MonLecteur, TRUE,9, (unsigned char*)Prenom,AuthKeyB,2);
+    status = GetDataSector(9, Prenom);
 
-    qDebug() << "status écriture du nom : " << status_Nom;
-    qDebug() << "status écriture du prenom : " << status_Prenom;
+    ui -> lineEdit_6 -> setText(Prenom);
+    ui -> lineEdit_6 -> update();
 }
 
 void MainWindow::initPictures()
@@ -173,6 +171,25 @@ uint16_t MainWindow::GetDataSector(int sector, char data[16])
 
     status = Mf_Classic_Read_Block(&MonLecteur, TRUE, sector, (unsigned char*)data, AuthKeyA, 2);
     qDebug() << "Lecture Carte"<< status;
+
+    return status;
+
+
+}
+uint16_t MainWindow::SetDataSector(int sector, QLineEdit* Qline)
+{
+    uint16_t status = MI_OK;
+
+    QString NomSaisi = Qline->text();
+
+    QByteArray byteArray = NomSaisi.toLocal8Bit();
+    const char* cstr = byteArray.data();
+
+    char Data[8];
+    strncpy(Data, cstr, sizeof(Data) - 1);
+    Data[7] = '\0';
+    status = Mf_Classic_Write_Block(&MonLecteur, TRUE,sector, (unsigned char*)Data,AuthKeyB,2);
+
 
     return status;
 
