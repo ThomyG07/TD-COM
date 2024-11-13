@@ -110,10 +110,6 @@ void MainWindow::on_SelectCardButton_clicked()
 
     auto WalletText = QString::number(Wallet);
 
-
-
-
-
     ui -> lineEdit_3 -> setText(WalletText);
     ui -> lineEdit_3 -> update();
 
