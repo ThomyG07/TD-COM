@@ -24,6 +24,8 @@ private:
     void EnableConfiguration(bool isvisible);
     uint16_t GetDataSector(int sector, char data[16]);
     uint16_t SetDataSector(int sector, QLineEdit* qline);
+    void LedBuzzerSendData();
+    void PopupMessage(QString msg);
 private slots:
     void on_ConnectButton_clicked();
     void on_DisconnectButton_clicked();

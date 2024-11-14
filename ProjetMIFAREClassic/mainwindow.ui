@@ -181,7 +181,7 @@
         <rect>
          <x>9</x>
          <y>29</y>
-         <width>262</width>
+         <width>265</width>
          <height>101</height>
         </rect>
        </property>
@@ -343,6 +343,9 @@
    </property>
   </widget>
   <widget class="QPushButton" name="SelectCardButton">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="geometry">
     <rect>
      <x>80</x>

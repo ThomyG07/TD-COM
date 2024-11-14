@@ -9,6 +9,7 @@
 #include "TypeDefs.h"
 #include <QDebug>
 #include <QString>
+#include <QMessageBox>
 
 
 MainWindow::MainWindow(QWidget *parent)
@@ -33,21 +34,22 @@ void MainWindow::on_ConnectButton_clicked()
     int16_t status = MI_OK;
     MonLecteur.Type = ReaderCDC;
     MonLecteur.device = 0;
-    status = OpenCOM(&MonLecteur);
-    qDebug() << "OpenCOM" << status;
-    ui->ConnectButton->setEnabled(false);
-    ui->DisconnectButton->setEnabled(true);
-    EnableConfiguration(true);
 
-    status = Version(&MonLecteur);
-    qDebug() << "Version" << status;
+    status = OpenCOM(&MonLecteur);
+    if(status != 0)PopupMessage("Erreur lors de l'ouverture de la communication");
 
     status = RF_Power_Control(&MonLecteur, TRUE, 0);
-    qDebug() << "Power On" << status;
+    if(status != 0)PopupMessage("Erreur lors de la connection du lecteur");
+    else
+    {
+        ui->ConnectButton->setEnabled(false);
+        ui->DisconnectButton->setEnabled(true);
+        ui->SelectCardButton->setEnabled(true);
+        EnableConfiguration(true);
+    }
 
-    //status = Version(&MonLecteur);
-    //ui->Affichage->setText(MonLecteur.version);
-    //ui->Affichage->update();
+
+
 }
 void MainWindow::on_DisconnectButton_clicked()
 {
@@ -56,6 +58,7 @@ void MainWindow::on_DisconnectButton_clicked()
     CloseCOM(&MonLecteur);
     ui->ConnectButton->setEnabled(true);
     ui->DisconnectButton->setEnabled(false);
+    ui->SelectCardButton->setEnabled(false);
     EnableConfiguration(false);
 }
 
@@ -63,8 +66,9 @@ void MainWindow::on_ExitButton_clicked()
 {
     int16_t status = MI_OK;
     RF_Power_Control(&MonLecteur, FALSE, 0);
-    status = LEDBuzzer(&MonLecteur, LED_OFF);
+    LEDBuzzer(&MonLecteur, LED_OFF);
     status = CloseCOM(&MonLecteur);
+    if(status != 0)PopupMessage("Erreur lors de la fermeture de la connection");
     qApp -> quit();
 }
 
@@ -81,39 +85,48 @@ void MainWindow::on_SelectCardButton_clicked()
 
     //Wake up de la carte
     status = ISO14443_3_A_PollCard(&MonLecteur,&atq, &sak, &uid, &uid_len );
+    if(status != 0)PopupMessage("Erreur: pour mettre le carte en mode wake up");
+    else
+    {
+        char Nom[16];
+        char Prenom[16];
 
-    char Nom[16];
-    char Prenom[16];
-
-    uint8_t Wallet = 0;
-
-
-    status = GetDataSector(10, Nom);
-
-    ui -> lineEdit_5 -> setText(Nom);
-    ui -> lineEdit_5 -> update();
-
-    status = GetDataSector(9, Prenom);
-
-    ui -> lineEdit_6 -> setText(Prenom);
-    ui -> lineEdit_6 -> update();
+        uint8_t Wallet = 0;
 
 
+        status = GetDataSector(10, Nom);
+        if(status != 0)
+        {
+            PopupMessage("Erreur: impossible de lire le bloc 10");
+            return;
+        }
 
-    status = Mf_Classic_Read_Block(&MonLecteur, TRUE, 14, &Wallet, AuthKeyA, 3);
-    qDebug() << status;
+        ui -> lineEdit_5 -> setText(Nom);
+        ui -> lineEdit_5 -> update();
 
-    qDebug() << "Nom" << Nom;
-    qDebug() << "Prenom" << Prenom;
-    qDebug() << "Wallet" << Wallet;
+        status = GetDataSector(9, Prenom);
+        if(status != 0)
+        {
+            PopupMessage("Erreur: impossible de lire le bloc 9");
+            return;
+        }
 
+        ui -> lineEdit_6 -> setText(Prenom);
+        ui -> lineEdit_6 -> update();
 
-    auto WalletText = QString::number(Wallet);
+        status = Mf_Classic_Read_Block(&MonLecteur, TRUE, 14, &Wallet, AuthKeyA, 3);
+        if(status != 0)
+        {
+            PopupMessage("Erreur: impossible de lire le bloc 14");
+            return;
+        }
 
-    ui -> lineEdit_3 -> setText(WalletText);
-    ui -> lineEdit_3 -> update();
+        auto WalletText = QString::number(Wallet);
 
+        ui -> lineEdit_3 -> setText(WalletText);
+        ui -> lineEdit_3 -> update();
 
+    }
 }
 
 void MainWindow::on_UpdateButton_clicked()
@@ -122,11 +135,7 @@ void MainWindow::on_UpdateButton_clicked()
     SetDataSector(10, ui->lineEdit_5);
     SetDataSector(9, ui->lineEdit_6);
 
-    LEDBuzzer(&MonLecteur, BUZZER_ON);
-    LEDBuzzer(&MonLecteur, LED_YELLOW_ON);
-    Sleep(10);
-    LEDBuzzer(&MonLecteur, BUZZER_OFF);
-    LEDBuzzer(&MonLecteur, LED_RED_ON);
+
 
     int16_t status = MI_OK;
 
@@ -134,14 +143,25 @@ void MainWindow::on_UpdateButton_clicked()
     char Prenom[16];
 
     status = GetDataSector(10, Nom);
+    if(status != 0)
+    {
+        PopupMessage("Erreur: impossible d'écrire sur le bloc 10");
+        return;
+    }
 
     ui -> lineEdit_5 -> setText(Nom);
     ui -> lineEdit_5 -> update();
 
     status = GetDataSector(9, Prenom);
+    if(status != 0)
+    {
+        PopupMessage("Erreur: impossible d'écrire sur le bloc 9");
+        return;
+    }
 
     ui -> lineEdit_6 -> setText(Prenom);
     ui -> lineEdit_6 -> update();
+    LedBuzzerSendData();
 }
 
 void MainWindow::initPictures()
@@ -177,11 +197,25 @@ void MainWindow::on_ChargeButton_clicked()
 
 
     statusIncrement = Mf_Classic_Increment_Value(&MonLecteur, TRUE, 13, ChargeValue, 13, AuthKeyB, 3);
-    qDebug() << statusIncrement;
+    if(statusIncrement != 0)
+    {
+        PopupMessage("Erreur lors de l'incrémentation du bloc 13");
+        return;
+    }
     statusRestore = Mf_Classic_Restore_Value(&MonLecteur, TRUE,13,14,AuthKeyB,3);
-    qDebug() << statusRestore;
+    if(statusRestore != 0)
+    {
+        PopupMessage("Erreur lors du transfert des données du bloc 13 à 14");
+        return;
+    }
     statusRead = Mf_Classic_Read_Block(&MonLecteur, TRUE, 14, &Wallet, AuthKeyA, 3);
-    qDebug() << statusRead;
+    if(statusRead != 0)
+    {
+        PopupMessage("Erreur lors de la lecture du bloc 14");
+        return;
+    }
+
+    LedBuzzerSendData();
 
     auto WalletText = QString::number(Wallet);
 
@@ -200,11 +234,25 @@ void MainWindow::on_PaieButton_clicked()
     uint8_t PayValue = ui->spinBox->value();
 
     statusDecrement = Mf_Classic_Decrement_Value(&MonLecteur, TRUE, 13, PayValue, 13, AuthKeyA,3);
-    qDebug() << statusDecrement;
+    if(statusDecrement != 0)
+    {
+        PopupMessage("Erreur lors de la décrementation du bloc 13");
+        return;
+    }
     statusRestore = Mf_Classic_Restore_Value(&MonLecteur, TRUE,13,14,AuthKeyB,3);
-    qDebug() << statusRestore;
+    if(statusRestore != 0)
+    {
+        PopupMessage("Erreur lors du transfert des données du bloc 13 à 14");
+        return;
+    }
     statusRead = Mf_Classic_Read_Block(&MonLecteur, TRUE, 14, &Wallet, AuthKeyA, 3);
-    qDebug() << statusRead;
+    if(statusRead != 0)
+    {
+        PopupMessage("Erreur lors de la lecture du bloc 14");
+        return;
+    }
+
+    LedBuzzerSendData();
 
     auto WalletText = QString::number(Wallet);
 
@@ -215,10 +263,7 @@ void MainWindow::on_PaieButton_clicked()
 uint16_t MainWindow::GetDataSector(int sector, char data[16])
 {
     uint16_t status = MI_OK;
-
     status = Mf_Classic_Read_Block(&MonLecteur, TRUE, sector, (unsigned char*)data, AuthKeyA, 2);
-    qDebug() << "Lecture Carte"<< status;
-
     return status;
 
 
@@ -241,4 +286,24 @@ uint16_t MainWindow::SetDataSector(int sector, QLineEdit* Qline)
     return status;
 
 
+}
+void MainWindow::LedBuzzerSendData()
+{
+    for(int i = 0; i<3; i++ )
+    {
+        LEDBuzzer(&MonLecteur, LED_YELLOW_ON);
+        Sleep(10);
+        LEDBuzzer(&MonLecteur, LED_YELLOW_OFF);
+    }
+    LEDBuzzer(&MonLecteur, BUZZER_ON);
+    Sleep(10);
+    LEDBuzzer(&MonLecteur, BUZZER_OFF);
+    LEDBuzzer(&MonLecteur, LED_RED_ON);
+}
+
+void MainWindow::PopupMessage(QString msg)
+{
+    QMessageBox messageBox;
+    messageBox.critical(0,"Error",msg);
+    messageBox.setFixedSize(500,200);
 }
