@@ -19,15 +19,17 @@ MainWindow::MainWindow(QWidget *parent)
     ui->setupUi(this);
     initPictures();
     EnableConfiguration(false);
-
-
 }
+
 
 MainWindow::~MainWindow()
 {
     delete ui;
 }
+
+
 ReaderName MonLecteur;
+
 
 void MainWindow::on_ConnectButton_clicked()
 {
@@ -47,10 +49,9 @@ void MainWindow::on_ConnectButton_clicked()
         ui->SelectCardButton->setEnabled(true);
         EnableConfiguration(true);
     }
-
-
-
 }
+
+
 void MainWindow::on_DisconnectButton_clicked()
 {
     RF_Power_Control(&MonLecteur, FALSE, 0);
@@ -62,6 +63,7 @@ void MainWindow::on_DisconnectButton_clicked()
     EnableConfiguration(false);
 }
 
+
 void MainWindow::on_ExitButton_clicked()
 {
     int16_t status = MI_OK;
@@ -72,6 +74,7 @@ void MainWindow::on_ExitButton_clicked()
     qApp -> quit();
 }
 
+
 void MainWindow::on_SelectCardButton_clicked()
 {
     int16_t status = MI_OK;
@@ -81,9 +84,6 @@ void MainWindow::on_SelectCardButton_clicked()
     uint8_t uid = 0;
     uint16_t uid_len = 0;
 
-
-
-    //Wake up de la carte
     status = ISO14443_3_A_PollCard(&MonLecteur,&atq, &sak, &uid, &uid_len );
     if(status != 0)PopupMessage("Erreur: pour mettre le carte en mode wake up");
     else
@@ -92,7 +92,6 @@ void MainWindow::on_SelectCardButton_clicked()
         char Prenom[16];
 
         uint8_t Wallet = 0;
-
 
         status = GetDataSector(10, Nom);
         if(status != 0)
@@ -125,17 +124,15 @@ void MainWindow::on_SelectCardButton_clicked()
 
         ui -> lineEdit_3 -> setText(WalletText);
         ui -> lineEdit_3 -> update();
-
     }
 }
+
 
 void MainWindow::on_UpdateButton_clicked()
 {
 
     SetDataSector(10, ui->lineEdit_5);
     SetDataSector(9, ui->lineEdit_6);
-
-
 
     int16_t status = MI_OK;
 
@@ -164,6 +161,7 @@ void MainWindow::on_UpdateButton_clicked()
     LedBuzzerSendData();
 }
 
+
 void MainWindow::initPictures()
 {
     QLabel* logo1 = ui->Logo_1;
@@ -171,8 +169,9 @@ void MainWindow::initPictures()
 
     QLabel* logo2 = ui->Logo_2;
     logo2->setPixmap(QPixmap(":/icon/Img/OIG2.png"));
-
 }
+
+
 void MainWindow::EnableConfiguration(bool isvisible)
 {
     QGroupBox * GroupeIdentite = ui->Identite;
@@ -185,6 +184,7 @@ void MainWindow::EnableConfiguration(bool isvisible)
     GroupeDecrementation->setEnabled(isvisible);
 }
 
+
 void MainWindow::on_ChargeButton_clicked()
 {
     uint16_t statusIncrement = MI_OK;
@@ -193,8 +193,6 @@ void MainWindow::on_ChargeButton_clicked()
 
     uint8_t Wallet;
     uint8_t ChargeValue = ui->spinBox_2->value();
-
-
 
     statusIncrement = Mf_Classic_Increment_Value(&MonLecteur, TRUE, 13, ChargeValue, 13, AuthKeyB, 3);
     if(statusIncrement != 0)
@@ -221,8 +219,8 @@ void MainWindow::on_ChargeButton_clicked()
 
     ui -> lineEdit_3 -> setText(WalletText);
     ui -> lineEdit_3 -> update();
-
 }
+
 
 void MainWindow::on_PaieButton_clicked()
 {
@@ -260,14 +258,15 @@ void MainWindow::on_PaieButton_clicked()
     ui -> lineEdit_3 -> update();
 }
 
+
 uint16_t MainWindow::GetDataSector(int sector, char data[16])
 {
     uint16_t status = MI_OK;
     status = Mf_Classic_Read_Block(&MonLecteur, TRUE, sector, (unsigned char*)data, AuthKeyA, 2);
     return status;
-
-
 }
+
+
 uint16_t MainWindow::SetDataSector(int sector, QLineEdit* Qline)
 {
     uint16_t status = MI_OK;
@@ -282,11 +281,10 @@ uint16_t MainWindow::SetDataSector(int sector, QLineEdit* Qline)
     Data[7] = '\0';
     status = Mf_Classic_Write_Block(&MonLecteur, TRUE,sector, (unsigned char*)Data,AuthKeyB,2);
 
-
     return status;
-
-
 }
+
+
 void MainWindow::LedBuzzerSendData()
 {
     for(int i = 0; i<3; i++ )
@@ -300,6 +298,7 @@ void MainWindow::LedBuzzerSendData()
     LEDBuzzer(&MonLecteur, BUZZER_OFF);
     LEDBuzzer(&MonLecteur, LED_RED_ON);
 }
+
 
 void MainWindow::PopupMessage(QString msg)
 {
